@@ -5,6 +5,7 @@ import { LoginUsuario } from "src/usuarios/interface/login-usuario.interface";
 import { UsuariosService } from "src/usuarios/usuarios.service";
 import * as bcrypt from 'bcryptjs';
 import { CreateUsuario } from 'src/usuarios/interface/create-usuario.interface';
+import { UpdateUsuario } from 'src/usuarios/interface/update-usuario.interface';
 
 
 
@@ -18,7 +19,8 @@ export class AuthService{
         private readonly usuariosService:UsuariosService
     ){}
 
-
+//----------------------------------------------------------------
+// Login
     async login({email, pass}:LoginUsuario):Promise<any> {
         const claveencriptada= await  bcrypt.hash(pass,10)
    
@@ -41,42 +43,85 @@ export class AuthService{
         }else{
           throw new HttpException("El usuario no existe.",400);
         }
-   
-   
-       
+
       }
       //----------------------------------------------------------------
-      async registrar({email, nombre, pass}:CreateUsuario) {
-        const claveencriptada= await  bcrypt.hash(pass,10)
-   
-        const usuarioExistente= await this.prismaService.usuarios.findUnique({
-          where:{
-            email
-          }
-        })
-   
-        if(usuarioExistente){
-          throw new HttpException("El usuario ya existe, no puede registrar.",409);
+      // Registrar
+      async registrar({ email, nombre, pass }: CreateUsuario) {
+        // Encriptar la contraseña proporcionada
+        const claveencriptada = await bcrypt.hash(pass, 10);
+      
+        // Verificar si ya existe un usuario con el mismo correo electrónico
+        const usuarioExistente = await this.prismaService.usuarios.findUnique({
+          where: {
+            email,
+          },
+        });
+      
+        // Si el usuario ya existe, lanzar una excepción con un código 409 (Conflicto)
+        if (usuarioExistente) {
+          throw new HttpException("El usuario ya existe, no puede registrar.", 409);
         }
-   
-   
-        const usuario=await this.prismaService.usuarios.create({
-          data:{
+      
+        // Crear un nuevo usuario en la base de datos
+        const usuario = await this.prismaService.usuarios.create({
+          data: {
             email,
             nombre,
-            pass:claveencriptada
+            pass: claveencriptada, // Se almacena la contraseña encriptada
           },
-        })
-   
-        const token= this.jwtService.sign({email:usuario.email,nombre:usuario.nombre})
-       
-        return token
+        });
+      
+        // Generar un token JWT para el nuevo usuario registrado
+        const token = this.jwtService.sign({
+          email: usuario.email,
+          nombre: usuario.nombre,
+        });
+      
+        // Devolver el token como resultado del registro
+        return token;
       }
+      
+// Actializar
+async actualizar(id: number, updateUsuario: UpdateUsuario) {
+  // Verificar si el usuario existe utilizando el ID
+  const usuarioExistente = await this.prismaService.usuarios.findUnique({
+    where: {
+      usuarioId: id,
+    },
+  });
 
-      async findAll() {
-        return await this.prismaService.usuarios.findMany()
-      }
+  if (!usuarioExistente) {
+    throw new HttpException("El usuario no existe, no se puede actualizar.", 404);
+  }
 
+  // Realizar la actualización utilizando el ID y los datos de actualización
+  const claveencriptada = await bcrypt.hash(updateUsuario.pass, 10);
+
+  const usuarioActualizado = await this.prismaService.usuarios.update({
+    where: {
+      usuarioId: id,
+    },
+    data: {
+      nombre: updateUsuario.nombre,
+      email: updateUsuario.email,
+      pass: claveencriptada,
+    },
+  });
+
+  if (!usuarioActualizado) {
+    throw new HttpException("No se pudo actualizar el usuario.", 500);
+  }
+
+  const token = this.jwtService.sign({
+    email: usuarioActualizado.email,
+    nombre: usuarioActualizado.nombre,
+  });
+
+  return token;
+}
+
+//-----------------------------------------------------------------
 
 
 }

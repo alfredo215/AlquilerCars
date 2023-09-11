@@ -4,6 +4,7 @@ import { LoginUsuarioDto } from '../usuarios/dto/login-usuario.dto';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { UpdateUsuarioDto } from 'src/usuarios/dto/update-usuario.dto';
 
 
 @Controller('auth')
@@ -26,12 +27,21 @@ export class AuthController {
     return this.usuariosService.login(loginDto);
   }
 //------------------------------------------------------
-// metodo para autentificarse
-@UseGuards(JwtAuthGuard)
-@ApiBearerAuth() // Añade la autenticación
-  @Get('/mostrar')
-  findAll() {
-    return this.usuariosService.findAll();
+
+// Actializar
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth() // Añade la autenticación
+  //----------------------------------------------------  
+  @Patch('/actualizar/:id') // Define la ruta para el método PATCH, utiliza el ID del usuario como parámetro
+  actualizar(@Param('id') id: string, @Body() updateUsuarioDto: UpdateUsuarioDto) {
+    // Llama a la función de actualización en el servicio y pasa el ID y los datos de actualización
+    return this.usuariosService.actualizar(+id, updateUsuarioDto);
   }
+  /*
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.usuariosService.remove(+id);
+  */
 
 }
