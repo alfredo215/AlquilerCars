@@ -22,7 +22,7 @@ model Usuarios {
 model Renta {
   rentaId        Int     @id @default(autoincrement())
   cliente String
-  dui String @unique
+  dui String
   fecha     DateTime
   carro_modelo String
   placa String @unique

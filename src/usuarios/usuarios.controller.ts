@@ -24,13 +24,8 @@ export class UsuariosController {
   findOne(@Param('id') id: string) {
     return this.usuariosService.findOne(+id);
   }
-/*
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUsuarioDto: UpdateUsuarioDto) {
-    return this.usuariosService.update(+id, updateUsuarioDto);
-  }
-*/
-  @Delete('eliminar/:id')
+
+  @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usuariosService.remove(+id);
   }
