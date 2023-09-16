@@ -82,7 +82,7 @@ export class AuthService{
         return token;
       }
       
-// Actializar
+// Actualizar
 async actualizar(id: number, updateUsuario: UpdateUsuario) {
   // Verificar si el usuario existe utilizando el ID
   const usuarioExistente = await this.prismaService.usuarios.findUnique({
@@ -95,30 +95,46 @@ async actualizar(id: number, updateUsuario: UpdateUsuario) {
     throw new HttpException("El usuario no existe, no se puede actualizar.", 404);
   }
 
-  // Realizar la actualización utilizando el ID y los datos de actualización
-  const claveencriptada = await bcrypt.hash(updateUsuario.pass, 10);
+  let usuarioActualizado;
 
-  const usuarioActualizado = await this.prismaService.usuarios.update({
-    where: {
-      usuarioId: id,
-    },
-    data: {
-      nombre: updateUsuario.nombre,
-      email: updateUsuario.email,
-      pass: claveencriptada,
-    },
-  });
+  // Verificar si la nueva contraseña se proporciona y no es nula
+  if (updateUsuario.pass !== undefined && updateUsuario.pass !== null) {
+    // Realizar la actualización utilizando el ID y los datos de actualización
+    const claveencriptada = await bcrypt.hash(updateUsuario.pass, 10);
 
-  if (!usuarioActualizado) {
-    throw new HttpException("No se pudo actualizar el usuario.", 500);
+    usuarioActualizado = await this.prismaService.usuarios.update({
+      where: {
+        usuarioId: id,
+      },
+      data: {
+        nombre: updateUsuario.nombre,
+        email: updateUsuario.email,
+        pass: claveencriptada,
+      },
+    });
+  } else {
+    // Si la nueva contraseña no se proporciona, actualiza sin cambiar la contraseña existente del usuario
+    usuarioActualizado = await this.prismaService.usuarios.update({
+      where: {
+        usuarioId: id,
+      },
+      data: {
+        nombre: updateUsuario.nombre,
+        email: updateUsuario.email,
+      },
+    });
   }
 
-  const token = this.jwtService.sign({
-    email: usuarioActualizado.email,
-    nombre: usuarioActualizado.nombre,
-  });
-
-  return token;
+  if (usuarioActualizado) {
+    const token = this.jwtService.sign({
+      email: usuarioActualizado.email,
+      nombre: usuarioActualizado.nombre,
+    });
+    return token;
+  } else {
+    // Manejar el caso en el que usuarioActualizado es null o undefined
+    throw new HttpException("No se pudo actualizar el usuario.", 500);
+  }
 }
 
 //-----------------------------------------------------------------
