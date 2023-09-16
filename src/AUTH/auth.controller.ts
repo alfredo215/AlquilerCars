@@ -29,19 +29,13 @@ export class AuthController {
 //------------------------------------------------------
 
 // Actializar
-  @UseGuards(JwtAuthGuard)
+ // @UseGuards(JwtAuthGuard)
   @ApiBearerAuth() // Añade la autenticación
   //----------------------------------------------------  
-  @Patch('/actualizar/:id') // Define la ruta para el método PATCH, utiliza el ID del usuario como parámetro
+  @Patch(':id') // Define la ruta para el método PATCH, utiliza el ID del usuario como parámetro
   actualizar(@Param('id') id: string, @Body() updateUsuarioDto: UpdateUsuarioDto) {
     // Llama a la función de actualización en el servicio y pasa el ID y los datos de actualización
     return this.usuariosService.actualizar(+id, updateUsuarioDto);
   }
-  /*
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usuariosService.remove(+id);
-  */
 
 }
