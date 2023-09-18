@@ -29,7 +29,7 @@ export class AuthController {
 //------------------------------------------------------
 
 // Actializar
- // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth() // Añade la autenticación
   //----------------------------------------------------  
   @Patch(':id') // Define la ruta para el método PATCH, utiliza el ID del usuario como parámetro

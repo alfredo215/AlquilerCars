@@ -26,19 +26,25 @@ export class AuthService{
    
         const usuarioExistente= await this.prismaService.usuarios.findUnique({
           where:{
-            email
-          }
-        })
+            email,
+          },
+        });
    
         if(usuarioExistente){
           //comprobar hash de la contraseña
-          const passwordCorrecto= await bcrypt.compare(pass,usuarioExistente.pass);
+          const passwordCorrecto= await bcrypt.compare(
+            pass,
+            usuarioExistente.pass
+            );
           if(!passwordCorrecto){
             throw new HttpException("La contraseña es incorrecta.",400);
           }else{
-            const token= this.jwtService.sign({email:usuarioExistente.email,nombre:usuarioExistente.nombre})
+            const token= this.jwtService.sign({
+              email:usuarioExistente.email,
+              nombre:usuarioExistente.nombre,
+            });
            
-            return token
+            return { statusCode: 200, token };
           }
         }else{
           throw new HttpException("El usuario no existe.",400);
